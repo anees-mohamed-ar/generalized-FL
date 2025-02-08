@@ -11,6 +11,19 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from sklearn.base import BaseEstimator, ClassifierMixin
 from scipy.special import expit  # For sigmoid function
+import random
+import warnings
+import warnings
+
+# Suppress specific FutureWarning
+warnings.filterwarnings("ignore", message="'DataFrame.swapaxes' is deprecated and will be removed in a future version. Please use 'DataFrame.transpose' instead.")
+warnings.filterwarnings("ignore", message="'Series.swapaxes' is deprecated and will be removed in a future version. Please use 'Series.transpose' instead.")
+
+
+
+def set_seed(seed=42):
+    np.random.seed(seed)
+    random.seed(seed)
 
 class DataHandler:
     def __init__(self, data_path, target_column, test_size=0.2, random_state=42):
@@ -179,7 +192,7 @@ class FederatedNode(threading.Thread):
         for key, grad in gradients.items():
             original_shape = grad.shape
             flattened = grad.flatten()
-            encrypted = ts.ckks_vector(self.encryption_context, flattened)
+            encrypted = ts.ckks_vector(self.context, flattened)
             encrypted_grads[key] = {
                 'data': encrypted,
                 'shape': original_shape
@@ -188,6 +201,7 @@ class FederatedNode(threading.Thread):
 
     def run(self):
         try:
+            set_seed(42)
             print(f"Node {self.node_id} starting local training for {self.local_epochs} epochs...")
             if len(self.X) == 0 or len(self.y) == 0:
                 print(f"Node {self.node_id}: Empty dataset. Skipping training.")
@@ -385,6 +399,9 @@ def decrypt_gradients(encrypted_gradients, decryption_context):
         # Decrypt using the proper context
         decrypted_flat = np.array(encrypted_data.decrypt())
         decrypted_grads[key] = decrypted_flat.reshape(original_shape)
+
+        print(f"\n🔓 Decrypted Weights for {key}:")
+        print(decrypted_grads[key])
     return decrypted_grads
 
 def average_gradients(encrypted_gradients_list, num_nodes):
@@ -631,6 +648,8 @@ class EnhancedFederatedLearning(FederatedLearning):
         print(f"• Number of Participating Nodes: {len(X_train_nodes)}")
         print("="*80 + "\n")
         self.local_epochs = local_epochs
+
+        #Creating encryption context
         encryption_context = self.key_manager.get_encryption_context()
         
         start_time = time.time()
@@ -783,21 +802,26 @@ def main():
         loop_until_surpass = True
         
         # Initialize data handler
-        data_path = "diabetesData.csv"
-        target_column = "target"
+        data_path = "placementdata.csv"
+        target_column = "PlacementStatus"
+        split_name = data_path.split(".")
+        json_name = split_name[0]
         data_handler = DataHandler(data_path=data_path, target_column=target_column)
         
         # Load and preprocess data
         print("Loading and preprocessing data...")
+        time.sleep(1)
         data = data_handler.load_data()
         X, y = data_handler.preprocess_data(data)
         
         # Get input dimension from the data
         input_dim = X.shape[1]
         print(f"Input dimension: {input_dim}")
-        
+        time.sleep(1)
+    
         # Split data
         print("Splitting data...")
+        time.sleep(1)
         X_train, X_test, y_train, y_test = data_handler.split_data(X, y)
 
         # Convert pandas objects to numpy arrays
@@ -806,14 +830,17 @@ def main():
         y_train_np = y_train.values
         y_test_np = y_test.values
 
+        set_seed(42)
+
         # Train centralized model for comparison
         print("Training centralized model...")
+        time.sleep(1)
         start_time = time.time()
         centralized_model = NeuralNetwork(input_dim=input_dim, learning_rate=0.01)
         
         # Train for a few epochs
         #num_epochs_c = 10
-        num_epochs = 3
+        num_epochs = 5
         batch_size = 32
         n_samples = X_train_np.shape[0]
         
@@ -831,11 +858,15 @@ def main():
         
         centralized_time = time.time() - start_time
         centralized_accuracy = centralized_model.score(X_test_np, y_test_np)
+        time.sleep(1)
         print(f"Centralized Model Accuracy: {centralized_accuracy * 100:.2f}%")
+        time.sleep(1)
         print(f"Centralized Training Time: {centralized_time:.2f} seconds\n")
+        time.sleep(1)
 
         # Federated Learning Setup
         print("Setting up federated learning...")
+        time.sleep(1)
         num_nodes = 2
         X_train_nodes, y_train_nodes = data_handler.split_data_for_nodes(X_train, y_train, num_nodes)
         
@@ -846,14 +877,15 @@ def main():
         # Initialize federated learning with correct input dimension
         fl_model = EnhancedFederatedLearning(
             input_dim=input_dim,  # Use the correct input dimension
-            num_rounds=999,
+            num_rounds=1,
             learning_rate=0.01,
-            model_path="federated_model.json",
+            model_path=f"{json_name}.json",
             local_epochs = num_epochs
         )
         
         # Train federated model
         print("Starting federated learning training...")
+        time.sleep(1)
         federated_model = fl_model.fit(
             X_train_nodes,
             y_train_nodes,

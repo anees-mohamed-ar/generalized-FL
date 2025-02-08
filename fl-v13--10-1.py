@@ -688,8 +688,8 @@ def main():
         loop_until_surpass = True
         
         # Initialize data handler
-        data_path = "diabetesData.csv"
-        target_column = "target"
+        data_path = "placementdata.csv"
+        target_column = "PlacementStatus"
         data_handler = DataHandler(data_path=data_path, target_column=target_column)
         
         # Load and preprocess data
@@ -718,7 +718,7 @@ def main():
         
         # Train for a few epochs
         #num_epochs_c = 10
-        num_epochs = 10
+        num_epochs = 6
         batch_size = 32
         n_samples = X_train_np.shape[0]
         
@@ -777,11 +777,13 @@ def main():
 
         # Compare models
         if federated_accuracy > centralized_accuracy:
-            improvement = ((federated_accuracy - centralized_accuracy) / centralized_accuracy) * 100
+            improvement = ((federated_accuracy - centralized_accuracy)) * 100
             print(f"\nFederated learning achieved {improvement:.2f}% improvement over centralized learning")
+            print(f"Dataset used : {data_path}")
         else:
             difference = ((centralized_accuracy - federated_accuracy)) * 100
             print(f"\nFederated learning performed {difference:.2f}% worse than centralized learning")
+            print(f"Dataset used : {data_path}")
 
     except Exception as e:
         print(f"An error occurred during training: {e}")

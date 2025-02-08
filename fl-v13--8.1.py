@@ -117,8 +117,10 @@ class CustomModel:
     def __init__(self):
         self.feature_importances_ = None
 
-    def update_feature_importances(self, gradients):
-        self.feature_importances_ = gradients
+    def update_parameters(self, gradients):
+        # Implement proper parameter updates using gradients
+        for param, grad in zip(self.parameters, gradients):
+            param -= self.learning_rate * grad
 
     def predict(self, X):
         if self.feature_importances_ is None:
