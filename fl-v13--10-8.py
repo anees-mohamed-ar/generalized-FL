@@ -1204,8 +1204,8 @@ def main():
         
         # Initialize data handler
             progress.update(setup_task, advance=20, description="[cyan]Loading data...")
-            data_path = "apple_quality.csv"
-            target_column = "Quality"
+            data_path = "smoking.csv"
+            target_column = "smoking"
             split_name = data_path.split(".")
             json_name = split_name[0]
             data_handler = DataHandler(data_path=data_path, target_column=target_column)
@@ -1289,7 +1289,7 @@ def main():
         # Initialize federated learning with correct input dimension
         fl_model = EnhancedFederatedLearning(
             input_dim=input_dim,  # Use the correct input dimension
-            num_rounds=int(rich_input("Enter Numbber of Rounds : ")),
+            num_rounds=int(rich_input("Enter Number of Rounds : ")),
             learning_rate=0.01,
             model_path=f"{json_name}.json",
             local_epochs = num_epochs,
