@@ -1,0 +1,6 @@
+pandas==2.2.3
+numpy==2.0.2
+tenseal==0.3.15
+scikit-learn==1.6.1
+scipy==1.13.1
+rich==13.9.4
